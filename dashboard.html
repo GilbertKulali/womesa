@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voting Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onload="checkLogin()">
+
+<div class="container">
+  <h2>Voting Dashboard</h2>
+
+  <form id="voteForm">
+
+    <div class="card">
+      <h3>Chairperson</h3>
+      <label><input type="radio" name="chair" value="Yes" required> Yes – Betty Makena (ITF)</label><br>
+      <label><input type="radio" name="chair" value="No"> No</label>
+    </div>
+
+    <div class="card">
+      <h3>Vice Chairperson</h3>
+      <label><input type="radio" name="vice" value="Rohiya Kale" required>
+        Rohiya Kale – Office of Political Advisor of the President</label><br>
+      <label><input type="radio" name="vice" value="Aisha Mwazuzu">
+        Aisha Mwazuzu – Express Shipping Line</label>
+    </div>
+
+    <div class="card">
+      <h3>Secretary</h3>
+      <p><em>No nominations received. Position vacant.</em></p>
+    </div>
+
+    <div class="card">
+      <h3>Treasurer</h3>
+      <label><input type="radio" name="treasurer" value="Caren Kulola" required>
+        Caren Kulola – Advocate</label><br>
+      <label><input type="radio" name="treasurer" value="Deborah Muchai">
+        Deborah Muchai – KCGS</label>
+    </div>
+
+    <div class="card">
+      <h3>Marketing & Communications Officer</h3>
+      <label><input type="radio" name="marketing" value="Yes" required>
+        Yes – Emma Okello (KPA)</label><br>
+      <label><input type="radio" name="marketing" value="No"> No</label>
+    </div>
+
+    <button type="submit">Submit Vote</button>
+  </form>
+
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
