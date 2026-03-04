@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Official Elections — Voting Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d1117;
+    --parchment: #f7f3ec;
+    --gold: #c8922a;
+    --gold-light: #e8b84b;
+    --gold-dark: #8b6318;
+    --crimson: #8b1a1a;
+    --sage: #2d4a3e;
+    --sage-light: #e8f0ec;
+    --border: #d4c9b0;
+    --muted: #7a6e5f;
+    --white: #ffffff;
+    --shadow: rgba(13,17,23,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--parchment);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(200,146,42,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(45,74,62,0.06) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8922a' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--ink);
+    color: var(--parchment);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0d1117 0%, #1a2332 50%, #0d1117 100%);
+  }
+  .site-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light), var(--gold), var(--gold-dark));
+  }
+  .header-inner {
+    position: relative;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 32px 36px;
+    text-align: center;
+  }
+  .seal {
+    width: 64px; height: 64px;
+    margin: 0 auto 20px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    background: rgba(200,146,42,0.08);
+    animation: sealGlow 3s ease-in-out infinite;
+  }
+  @keyframes sealGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(200,146,42,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(200,146,42,0); }
+  }
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .site-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--parchment);
+    margin-bottom: 8px;
+  }
+  .site-header p {
+    font-size: 14px;
+    color: rgba(247,243,236,0.6);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+  .progress-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    letter-spacing: 0.08em;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    border-radius: 3px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+  }
+  .progress-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold-dark);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  /* ── INTRO ── */
+  .intro-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 40px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .intro-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .intro-card h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .intro-card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* ── POSITION SECTION ── */
+  .position-section {
+    margin-bottom: 36px;
+    animation: fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .position-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .position-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold-dark);
+    background: rgba(200,146,42,0.1);
+    border: 1px solid rgba(200,146,42,0.25);
+    border-radius: 4px;
+    padding: 2px 8px;
+    letter-spacing: 0.1em;
+  }
+  .position-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .position-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  /* ── CANDIDATE CARDS ── */
+  .candidates-grid {
+    display: grid;
+    gap: 12px;
+  }
+  .candidates-grid.multi { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+  .candidate-card {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+  .candidate-card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 4px 20px rgba(200,146,42,0.15);
+    transform: translateY(-2px);
+  }
+  .candidate-card.selected {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, #fffbf0, #fff8e8);
+    box-shadow: 0 4px 20px rgba(200,146,42,0.2), inset 0 0 0 1px rgba(200,146,42,0.2);
+  }
+  .candidate-card.selected .check-ring {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  .candidate-card.selected .check-ring::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .candidate-card.uncontested {
+    border-color: var(--sage);
+    background: var(--sage-light);
+    cursor: default;
+  }
+  .candidate-card.uncontested:hover {
+    transform: none;
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+
+  /* Avatar */
+  .avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--sage), #1a3229);
+    box-shadow: 0 2px 8px rgba(45,74,62,0.3);
+  }
+  .candidate-card.selected .avatar {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    box-shadow: 0 2px 8px rgba(200,146,42,0.3);
+  }
+  .candidate-card.uncontested .avatar {
+    background: linear-gradient(135deg, var(--sage), #2d4a3e);
+  }
+
+  /* Candidate info */
+  .candidate-info { flex: 1; min-width: 0; }
+  .candidate-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .candidate-org {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .candidate-card.selected .candidate-org { color: var(--gold-dark); }
+  .uncontested-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sage);
+    background: rgba(45,74,62,0.12);
+    border: 1px solid rgba(45,74,62,0.25);
+    border-radius: 3px;
+    padding: 2px 7px;
+    margin-top: 5px;
+    display: inline-block;
+  }
+
+  /* Check ring */
+  .check-ring {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.2s;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .check-ring::after {
+    content: '✓';
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Vacant */
+  .vacant-card {
+    background: var(--white);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--muted);
+  }
+  .vacant-icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--parchment);
+    border: 2px dashed var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .vacant-card .candidate-name { color: var(--muted); font-style: italic; }
+
+  /* ── SUBMIT SECTION ── */
+  .submit-section {
+    margin-top: 48px;
+    text-align: center;
+    position: relative;
+  }
+  .submit-section::before {
+    content: '';
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin-bottom: 40px;
+  }
+  .submit-note {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .incomplete-warning {
+    background: rgba(139,26,26,0.06);
+    border: 1px solid rgba(139,26,26,0.2);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--crimson);
+    margin-bottom: 20px;
+    display: none;
+    font-weight: 500;
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--ink), #1a2332);
+    color: var(--gold-light);
+    border: none;
+    padding: 16px 52px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(13,17,23,0.3);
+  }
+  .btn-submit::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(200,146,42,0.15));
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(13,17,23,0.4); }
+  .btn-submit:hover::before { opacity: 1; }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit:disabled {
+    background: #c5bdb2;
+    color: var(--white);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* ── CONFIRMATION OVERLAY ── */
+  .overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(13,17,23,0.7);
+    backdrop-filter: blur(6px);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 16px;
+    max-width: 520px;
+    width: 100%;
+    padding: 44px 40px;
+    text-align: center;
+    box-shadow: 0 24px 80px rgba(13,17,23,0.4);
+    animation: modalIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92) translateY(12px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-seal {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--sage), #1a3229);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 24px;
+    box-shadow: 0 4px 20px rgba(45,74,62,0.3);
+  }
+  .modal h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .modal p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+  .summary-list {
+    text-align: left;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .summary-item:last-child { border-bottom: none; }
+  .summary-role {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+  .summary-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    text-align: right;
+  }
+  .modal-btns { display: flex; gap: 12px; }
+  .btn-back {
+    flex: 1;
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { background: var(--border); }
+  .btn-confirm {
+    flex: 2;
+    background: linear-gradient(135deg, var(--sage), #1a3229);
+    color: var(--white);
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(45,74,62,0.3);
+  }
+  .btn-confirm:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,74,62,0.35); }
+
+  /* ── SUCCESS STATE ── */
+  .success-view {
+    display: none;
+    text-align: center;
+    padding: 80px 32px;
+    animation: fadeUp 0.5s ease;
+  }
+  .success-view.show { display: block; }
+  .success-circle {
+    width: 100px; height: 100px;
+    background: linear-gradient(135deg, var(--sage), #1a3229);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px;
+    margin: 0 auto 32px;
+    box-shadow: 0 8px 40px rgba(45,74,62,0.3);
+    animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+  }
+  @keyframes successPop {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .success-view h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+  .success-view p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 400px;
+    margin: 0 auto 16px;
+  }
+  .vote-id {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gold-dark);
+    background: rgba(200,146,42,0.1);
+    border: 1px solid rgba(200,146,42,0.3);
+    border-radius: 6px;
+    padding: 8px 20px;
+    letter-spacing: 0.15em;
+    margin-top: 8px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    main { padding: 32px 20px 60px; }
+    .intro-card { padding: 20px; flex-direction: column; gap: 12px; }
+    .progress-inner { padding: 14px 20px; }
+    .modal { padding: 32px 24px; }
+    .modal-btns { flex-direction: column; }
+    .candidates-grid.multi { grid-template-columns: 1fr; }
+    .header-inner { padding: 32px 20px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="seal">⚖️</div>
+    <span class="header-tag">Official Ballot · 2025</span>
+    <h1>Election of Officers</h1>
+    <p>Cast your vote for each contested position below</p>
+  </div>
+</header>
+
+<!-- Progress bar -->
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <span class="progress-label">BALLOT PROGRESS</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-count" id="progressCount">0 / 3 required</span>
+  </div>
+</div>
+
+<!-- Main content -->
+<main id="mainContent">
+
+  <!-- Intro -->
+  <div class="intro-card">
+    <div class="intro-icon">📋</div>
+    <div>
+      <h2>Voting Instructions</h2>
+      <p>Select <strong>one candidate</strong> for each contested position. Positions with a single nominated candidate are automatically confirmed. Your ballot is private and can only be submitted once. Review your selections carefully before submitting.</p>
+    </div>
+  </div>
+
+  <!-- ── 1. CHAIRPERSON ── -->
+  <div class="position-section" style="animation-delay: 0.05s">
+    <div class="position-header">
+      <span class="position-num">01</span>
+      <span class="position-title">Chairperson</span>
+      <span class="position-note">Uncontested</span>
+    </div>
+    <div class="candidates-grid">
+      <div class="candidate-card uncontested">
+        <div class="avatar">BM</div>
+        <div class="candidate-info">
+          <div class="candidate-name">Betty Makena</div>
+          <div class="candidate-org">ITF</div>
+          <span class="uncontested-badge">✓ Auto-confirmed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. VICE CHAIRPERSON ── -->
+  <div class="position-section" style="animation-delay: 0.1s">
+    <div class="position-header">
+      <span class="position-num">02</span>
+      <span class="position-title">Vice Chairperson</span>
+    </div>
+    <div class="candidates-grid multi" id="vc-grid">
+      <div class="candidate-card" onclick="selectCandidate('vc', 'Rohiya Kale', this)">
+        <div class="avatar">RK</div>
+        <div class="candidate-info">
+          <div class="candidate-name">Rohiya Kale</div>
+          <div class="candidate-org">Office of Political Advisor of the President</div>
+        </div>
+        <div class="check-ring"></div>
+      </div>
+      <div class="candidate-card" onclick="selectCandidate('vc', 'Aisha Mwazuzu', this)">
+        <div class="avatar">AM</div>
+        <div class="candidate-info">
+          <div class="candidate-name">Aisha Mwazuzu</div>
+          <div class="candidate-org">Express Shipping Line</div>
+        </div>
+        <div class="check-ring"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. SECRETARY ── -->
+  <div class="position-section" style="animation-delay: 0.15s">
+    <div class="position-header">
+      <span class="position-num">03</span>
+      <span class="position-title">Secretary</span>
+      <span class="position-note">No candidates</span>
+    </div>
+    <div class="candidates-grid">
+      <div class="vacant-card">
+        <div class="vacant-icon">🪑</div>
+        <div class="candidate-info">
+          <div class="candidate-name">Position Vacant</div>
+          <div class="candidate-org">No nominations received for this role</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. TREASURER ── -->
+  <div class="position-section" style="animation-delay: 0.2s">
+    <div class="position-header">
+      <span class="position-num">04</span>
+      <span class="position-title">Treasurer</span>
+    </div>
+    <div class="candidates-grid multi" id="tr-grid">
+      <div class="candidate-card" onclick="selectCandidate('tr', 'Caren Kulola', this)">
+        <div class="avatar">CK</div>
+        <div class="candidate-info">
+          <div class="candidate-name">Caren Kulola</div>
+          <div class="candidate-org">Advocate</div>
+        </div>
+        <div class="check-ring"></div>
+      </div>
+      <div class="candidate-card" onclick="selectCandidate('tr', 'Deborah Muchai', this)">
+        <div class="avatar">DM</div>
+        <div class="candidate-info">
+          <div class="candidate-name">Deborah Muchai</div>
+          <div class="candidate-org">KCGS</div>
+        </div>
+        <div class="check-ring"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5. MARKETING & COMMS ── -->
+  <div class="position-section" style="animation-delay: 0.25s">
+    <div class="position-header">
+      <span class="position-num">05</span>
+      <span class="position-title">Marketing &amp; Communications Officer</span>
+      <span class="position-note">Uncontested</span>
+    </div>
+    <div class="candidates-grid">
+      <div class="candidate-card uncontested">
+        <div class="avatar">EO</div>
+        <div class="candidate-info">
+          <div class="candidate-name">Emma Okello</div>
+          <div class="candidate-org">Kenya Ports Authority (KPA)</div>
+          <span class="uncontested-badge">✓ Auto-confirmed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-section">
+    <p class="submit-note">
+      You must vote for all contested positions before submitting.<br>
+      <strong>Chairperson</strong> and <strong>Marketing &amp; Comms Officer</strong> are auto-confirmed.
+    </p>
+    <div class="incomplete-warning" id="warningMsg">⚠ Please select a candidate for all required positions before submitting.</div>
+    <button class="btn-submit" id="submitBtn" onclick="openConfirm()">
+      Submit Ballot
+    </button>
+  </div>
+
+</main>
+
+<!-- Success view (hidden initially) -->
+<div class="success-view" id="successView">
+  <div class="success-circle">✅</div>
+  <h2>Vote Cast Successfully</h2>
+  <p>Your ballot has been recorded. Thank you for participating in this election. Results will be announced after the voting period closes.</p>
+  <p>Your reference number:</p>
+  <div class="vote-id" id="voteId"></div>
+</div>
+
+<!-- Confirmation Overlay -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal">
+    <div class="modal-seal">🗳️</div>
+    <h2>Confirm Your Ballot</h2>
+    <p>Please review your selections. Once submitted, your vote cannot be changed.</p>
+    <div class="summary-list" id="summaryList"></div>
+    <div class="modal-btns">
+      <button class="btn-back" onclick="closeConfirm()">← Go Back</button>
+      <button class="btn-confirm" onclick="castVote()">Cast My Vote →</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Secure Voting Portal · Confidential Ballot · Results Published After Close of Poll
+</footer>
+
+<script>
+  const votes = {
+    vc: null, // Vice Chairperson
+    tr: null  // Treasurer
+  };
+  const required = ['vc', 'tr'];
+
+  function selectCandidate(position, name, card) {
+    // Deselect all in same group
+    const grid = card.closest('.candidates-grid');
+    grid.querySelectorAll('.candidate-card').forEach(c => c.classList.remove('selected'));
+    
+    // Select this card
+    card.classList.add('selected');
+    votes[position] = name;
+    
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const filled = required.filter(p => votes[p] !== null).length;
+    const total = required.length;
+    const pct = (filled / total) * 100;
+    
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = filled + ' / ' + total + ' required';
+  }
+
+  function allVotesCast() {
+    return required.every(p => votes[p] !== null);
+  }
+
+  function openConfirm() {
+    if (!allVotesCast()) {
+      const w = document.getElementById('warningMsg');
+      w.style.display = 'block';
+      w.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    document.getElementById('warningMsg').style.display = 'none';
+
+    // Build summary
+    const positions = [
+      { role: 'Chairperson', name: 'Betty Makena', auto: true },
+      { role: 'Vice Chairperson', name: votes.vc, auto: false },
+      { role: 'Secretary', name: 'Position Vacant', auto: true },
+      { role: 'Treasurer', name: votes.tr, auto: false },
+      { role: 'Marketing & Comms', name: 'Emma Okello', auto: true },
+    ];
+
+    const html = positions.map(p => `
+      <div class="summary-item">
+        <span class="summary-role">${p.role}</span>
+        <span class="summary-name">${p.auto ? '<em style="color:#7a6e5f;font-family:Outfit,sans-serif;font-size:13px">' + p.name + '</em>' : p.name}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('summaryList').innerHTML = html;
+    document.getElementById('confirmOverlay').classList.add('show');
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirmOverlay').classList.remove('show');
+  }
+
+  function castVote() {
+    document.getElementById('confirmOverlay').classList.remove('show');
+
+    // Generate vote ID
+    const id = 'VT-' + Date.now().toString(36).toUpperCase().slice(-6) + '-' + Math.random().toString(36).toUpperCase().slice(2,5);
+    document.getElementById('voteId').textContent = id;
+
+    // Show success
+    document.getElementById('mainContent').style.display = 'none';
+    document.querySelector('.progress-wrap').style.display = 'none';
+    document.getElementById('successView').classList.add('show');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
